@@ -97,6 +97,13 @@ module Docx
           end
         end
 
+        def num_pr
+          numpr = @node.xpath('w:pPr//w:numPr').first
+          return nil unless numpr
+
+          numpr.xpath('w:ilvl').first.attributes['val'].value
+        end
+
         alias_method :text, :to_s
 
         private

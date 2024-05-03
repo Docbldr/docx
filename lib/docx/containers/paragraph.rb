@@ -98,15 +98,32 @@ module Docx
         end
 
         def num_pr
-          numpr = @node.xpath('w:pPr//w:numPr').first
-          return nil unless numpr
+          if (numpr = @node.xpath('w:pPr//w:numPr').first)
+            get_ilvl(numpr)
+          elsif style_property
+            style_val = style_property.attributes['val'].value
+            path = "w:styles/w:style[@w:styleId='#{style_val}']"
+            style = @document.styles.at_xpath(path)
 
-          numpr.xpath('w:ilvl').first.attributes['val'].value
+            if (style_numpr = style.at_xpath('w:pPr/w:numPr'))
+              get_ilvl(style_numpr)
+            end
+          end
         end
 
         alias_method :text, :to_s
 
         private
+
+        def get_ilvl(numpr)
+          if numpr.at_xpath('w:numId').attributes['val'].value == '0'
+            nil
+          elsif (ilvl = numpr.at_xpath('w:ilvl'))
+            ilvl.attributes['val'].value
+          else
+            '0'
+          end
+        end
 
         def style_property
           properties&.at_xpath('w:pStyle')
